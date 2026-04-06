@@ -1,50 +1,564 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Student Data</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Event Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131c;
+      --surface2: #1c1c2e;
+      --border: #2a2a40;
+      --accent: #7c6af7;
+      --accent2: #f76ac8;
+      --accent3: #6af7d4;
+      --text: #e8e8f5;
+      --muted: #7878a0;
+      --error: #f76a6a;
+      --success: #6af7a0;
+      --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* ── Gradient blobs ── */
+    .blob {
+      position: fixed; border-radius: 50%; filter: blur(120px);
+      pointer-events: none; z-index: 0; opacity: 0.18;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -200px; animation: drift1 18s ease-in-out infinite; }
+    .blob-2 { width: 500px; height: 500px; background: var(--accent2); bottom: -150px; right: -150px; animation: drift2 22s ease-in-out infinite; }
+    .blob-3 { width: 350px; height: 350px; background: var(--accent3); top: 40%; left: 55%; animation: drift3 16s ease-in-out infinite; }
+
+    @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,80px)} }
+    @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-70px,-60px)} }
+    @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-50px)} }
+
+    /* ── Page wrapper ── */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 56px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,106,247,.15); border: 1px solid rgba(124,106,247,.35);
+      color: #a99bf9; font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+      padding: 6px 16px; border-radius: 100px; margin-bottom: 20px;
+      animation: fadeUp .6s ease both;
+    }
+    .badge::before { content: '●'; color: var(--accent3); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 800; line-height: 1.1;
+      letter-spacing: -.03em;
+      background: linear-gradient(135deg, #fff 30%, #a99bf9 70%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: fadeUp .6s .1s ease both;
+    }
+
+    .subtitle {
+      margin-top: 14px; color: var(--muted); font-size: 1rem; font-weight: 300;
+      animation: fadeUp .6s .2s ease both;
+    }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 48px;
+      position: relative; overflow: hidden;
+      animation: fadeUp .6s .3s ease both;
+      box-shadow: 0 40px 120px rgba(0,0,0,.5);
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    }
+
+    @media(max-width:600px){ .card{ padding:32px 20px; } }
+
+    /* ── Section title ── */
+    .section-title {
+      font-family: 'Syne', sans-serif; font-size: .7rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 24px; margin-top: 36px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .section-title:first-child { margin-top: 0; }
+
+    /* ── Grid ── */
+    .grid { display: grid; gap: 20px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    @media(max-width:640px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
+
+    /* ── Field ── */
+    .field { display: flex; flex-direction: column; gap: 8px; }
+
+    label {
+      font-size: .8rem; font-weight: 500; color: var(--muted);
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    label span { color: var(--accent2); }
+
+    input, select, textarea {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,247,.18);
+      background: #1f1f30;
+    }
+    input::placeholder, textarea::placeholder { color: #44445a; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237878a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+    textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+    /* ── Checkbox group ── */
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .checkbox-item input[type="checkbox"] {
+      width: 18px; height: 18px; padding: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .checkbox-item span { font-size: .9rem; color: var(--text); }
+
+    /* ── Radio group ── */
+    .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .radio-card {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer; font-size: .9rem; color: var(--muted);
+      transition: border-color .2s, color .2s, background .2s;
+      user-select: none;
+    }
+    .radio-card input { display: none; }
+    .radio-card:has(input:checked) {
+      border-color: var(--accent); color: var(--text);
+      background: rgba(124,106,247,.12);
+    }
+    .radio-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid currentColor; display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s;
+    }
+    .radio-card:has(input:checked) .radio-dot::after {
+      content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    }
+
+    /* ── File upload ── */
+    .file-upload {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 24px; text-align: center;
+      cursor: pointer; transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .file-upload:hover { border-color: var(--accent); background: rgba(124,106,247,.05); }
+    .file-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .file-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .file-label { color: var(--muted); font-size: .85rem; }
+    .file-label strong { color: var(--accent); }
+
+    /* ── Submit button ── */
+    .btn-wrap { margin-top: 36px; display: flex; justify-content: flex-end; gap: 12px; align-items: center; }
+
+    .btn-reset {
+      padding: 14px 24px; border-radius: var(--radius);
+      border: 1.5px solid var(--border); background: transparent;
+      color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: .9rem; cursor: pointer; transition: all .2s;
+    }
+    .btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+    .btn-submit {
+      padding: 14px 36px; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff;
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .15s, box-shadow .2s; letter-spacing: .02em;
+      box-shadow: 0 8px 32px rgba(124,106,247,.35);
+    }
+    .btn-submit::before {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background .2s;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(124,106,247,.5); }
+    .btn-submit:hover::before { background: rgba(255,255,255,.08); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit .arrow { margin-left: 8px; transition: transform .2s; display: inline-block; }
+    .btn-submit:hover .arrow { transform: translateX(4px); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 32px; right: 32px; z-index: 100;
+      padding: 16px 24px; border-radius: var(--radius);
+      font-size: .9rem; font-weight: 500;
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px); opacity: 0;
+      transition: all .4s cubic-bezier(.34,1.56,.64,1);
+      pointer-events: none; max-width: 340px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #0f2a1e; border: 1px solid var(--success); color: var(--success); }
+    .toast.error   { background: #2a0f0f; border: 1px solid var(--error);   color: var(--error);   }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      margin-bottom: 40px;
+      display: flex; gap: 0; align-items: center;
+    }
+    .step {
+      flex: 1; text-align: center; position: relative;
+    }
+    .step-circle {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700;
+      color: var(--muted); margin: 0 auto 8px;
+      transition: all .3s; position: relative; z-index: 1;
+    }
+    .step.active .step-circle { border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,.15); }
+    .step.done .step-circle { border-color: var(--accent3); background: rgba(106,247,212,.15); color: var(--accent3); }
+    .step-label { font-size: .7rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+    .step.active .step-label { color: var(--accent); }
+    .step.done .step-label { color: var(--accent3); }
+    .step-line { flex: 1; height: 2px; background: var(--border); margin-bottom: 26px; }
+    .step-line.done { background: linear-gradient(90deg, var(--accent3), var(--accent)); }
+
+    /* ── Required note ── */
+    .required-note { color: var(--muted); font-size: .78rem; margin-bottom: 28px; }
+    .required-note span { color: var(--accent2); }
+  </style>
 </head>
 <body>
 
-<h2>Student Form</h2>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
 
-Name: <input type="text" id="name"><br><br>
-Roll: <input type="text" id="roll"><br><br>
-Marks: <input type="number" id="marks"><br><br>
+<div class="page">
 
-<button onclick="addStudent()">Save</button>
-<button onclick="getStudents()">Show Data</button>
+  <!-- Header -->
+  <header>
+    <div class="badge">🎓 Campus Events Portal</div>
+    <h1>Student Event<br/>Registration</h1>
+    <p class="subtitle">Reserve your spot — complete the form below to register.</p>
+  </header>
 
-<h3>Student List:</h3>
-<div id="output"></div>
+  <!-- Progress bar -->
+  <div class="progress-bar-wrap" id="progressBar">
+    <div class="step active" id="step1">
+      <div class="step-circle">1</div>
+      <div class="step-label">Personal</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step active" id="step2">
+      <div class="step-circle">2</div>
+      <div class="step-label">Academic</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step active" id="step3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Event</div>
+    </div>
+    <div class="step-line" id="line3"></div>
+    <div class="step active" id="step4">
+      <div class="step-circle">4</div>
+      <div class="step-label">Confirm</div>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card">
+    <p class="required-note">Fields marked <span>*</span> are required.</p>
+
+    <form id="registrationForm" action="register.php" method="POST" enctype="multipart/form-data" novalidate>
+
+      <!-- ── SECTION 1: Personal Info ── -->
+      <div class="section-title">01 &nbsp;Personal Information</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>First Name <span>*</span></label>
+          <input type="text" name="first_name" placeholder="e.g. Arjun" required />
+        </div>
+        <div class="field">
+          <label>Last Name <span>*</span></label>
+          <input type="text" name="last_name" placeholder="e.g. Sharma" required />
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:20px">
+        <div class="field">
+          <label>Email Address <span>*</span></label>
+          <input type="email" name="email" placeholder="student@university.edu" required />
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="+91 98765 43210" />
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:20px">
+        <div class="field">
+          <label>Date of Birth</label>
+          <input type="date" name="dob" />
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <div class="radio-group" style="margin-top:4px">
+            <label class="radio-card"><input type="radio" name="gender" value="Male" /><span class="radio-dot"></span>Male</label>
+            <label class="radio-card"><input type="radio" name="gender" value="Female" /><span class="radio-dot"></span>Female</label>
+            <label class="radio-card"><input type="radio" name="gender" value="Other" /><span class="radio-dot"></span>Other</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION 2: Academic Info ── -->
+      <div class="section-title">02 &nbsp;Academic Details</div>
+      <div class="grid grid-3">
+        <div class="field">
+          <label>Student ID <span>*</span></label>
+          <input type="text" name="student_id" placeholder="e.g. STU2024001" required />
+        </div>
+        <div class="field">
+          <label>Department <span>*</span></label>
+          <select name="department" required>
+            <option value="" disabled selected>Select dept.</option>
+            <option>Computer Science</option>
+            <option>Information Technology</option>
+            <option>Electronics &amp; Comm.</option>
+            <option>Mechanical Engineering</option>
+            <option>Civil Engineering</option>
+            <option>Business Administration</option>
+            <option>Data Science</option>
+            <option>Biotechnology</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Year / Semester <span>*</span></label>
+          <select name="year_sem" required>
+            <option value="" disabled selected>Select year</option>
+            <option>1st Year – Sem 1</option>
+            <option>1st Year – Sem 2</option>
+            <option>2nd Year – Sem 3</option>
+            <option>2nd Year – Sem 4</option>
+            <option>3rd Year – Sem 5</option>
+            <option>3rd Year – Sem 6</option>
+            <option>4th Year – Sem 7</option>
+            <option>4th Year – Sem 8</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:20px">
+        <div class="field">
+          <label>CGPA / Percentage</label>
+          <input type="text" name="cgpa" placeholder="e.g. 8.4 or 84%" />
+        </div>
+        <div class="field">
+          <label>Faculty Advisor / Guide</label>
+          <input type="text" name="advisor" placeholder="Prof. name (if applicable)" />
+        </div>
+      </div>
+
+      <!-- ── SECTION 3: Event Info ── -->
+      <div class="section-title">03 &nbsp;Event Details</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Event Name <span>*</span></label>
+          <select name="event_name" required>
+            <option value="" disabled selected>Choose event</option>
+            <option>Tech Symposium 2025</option>
+            <option>Cultural Fest – Umang</option>
+            <option>Hackathon 24H</option>
+            <option>Sports Day</option>
+            <option>Science Exhibition</option>
+            <option>Entrepreneurship Summit</option>
+            <option>Workshop on AI &amp; ML</option>
+            <option>Photography Contest</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Event Date <span>*</span></label>
+          <input type="date" name="event_date" required />
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:20px">
+        <div class="field">
+          <label>Participation Type <span>*</span></label>
+          <div class="radio-group" style="margin-top:4px">
+            <label class="radio-card"><input type="radio" name="participation_type" value="Individual" required /><span class="radio-dot"></span>Individual</label>
+            <label class="radio-card"><input type="radio" name="participation_type" value="Team" /><span class="radio-dot"></span>Team</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Team Name (if team)</label>
+          <input type="text" name="team_name" placeholder="e.g. Code Wizards" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>Interested In (choose all that apply)</label>
+        <div class="checkbox-group" style="margin-top:6px">
+          <label class="checkbox-item"><input type="checkbox" name="interests[]" value="Competition" /><span>Competition</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="interests[]" value="Workshop" /><span>Workshop</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="interests[]" value="Seminar" /><span>Seminar</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="interests[]" value="Exhibition" /><span>Exhibition</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="interests[]" value="Networking" /><span>Networking</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="interests[]" value="Performance" /><span>Performance</span></label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>Special Requirements / Remarks</label>
+        <textarea name="remarks" placeholder="Any dietary restrictions, accessibility needs, or other notes..."></textarea>
+      </div>
+
+      <!-- ── SECTION 4: Upload ── -->
+      <div class="section-title">04 &nbsp;Document Upload</div>
+      <div class="field">
+        <label>Upload ID Card / Proof (optional)</label>
+        <div class="file-upload" id="fileZone">
+          <input type="file" name="id_proof" accept=".jpg,.jpeg,.png,.pdf" id="fileInput" />
+          <div class="file-icon">📎</div>
+          <div class="file-label" id="fileLabel"><strong>Click to upload</strong> or drag & drop<br/>JPG, PNG or PDF — max 2 MB</div>
+        </div>
+      </div>
+
+      <!-- ── SECTION 5: Declaration ── -->
+      <!-- <div class="section-title">05 &nbsp;Declaration</div>
+      <label class="checkbox-item" style="gap:12px">
+        <input type="checkbox" name="declaration" id="declaration" required style="width:18px;height:18px" />
+        <span style="font-size:.88rem;color:var(--muted);line-height:1.5">
+          I confirm that all information provided is accurate. I agree to the event's
+          <a href="#" style="color:var(--accent);text-decoration:none">terms &amp; conditions</a>
+          and the college's code of conduct. <span style="color:var(--accent2)">*</span>
+        </span>
+      </label> -->
+
+      <!-- ── Buttons ── -->
+      <div class="btn-wrap">
+        <button type="reset" class="btn-reset">Clear Form</button>
+        <button type="submit" class="btn-submit">Register Now <span class="arrow">→</span></button>
+      </div>
+
+    </form>
+  </div><!-- /card -->
+
+</div><!-- /page -->
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
 
 <script>
-function addStudent() {
-    let name = document.getElementById("name").value;
-    let roll = document.getElementById("roll").value;
-    let marks = document.getElementById("marks").value;
+  // File upload label update
+  document.getElementById('fileInput').addEventListener('change', function(){
+    const name = this.files[0]?.name ?? '';
+    document.getElementById('fileLabel').innerHTML = name
+      ? `<strong>${name}</strong>`
+      : '<strong>Click to upload</strong> or drag & drop<br/>JPG, PNG or PDF — max 2 MB';
+  });
 
-    fetch("add.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `name=${name}&roll=${roll}&marks=${marks}`
-    })
-    .then(res => res.text())
-    .then(data => alert(data));
-}
+  // Toast helper
+  function showToast(msg, type='success'){
+    const t = document.getElementById('toast');
+    t.className = `toast ${type}`;
+    t.innerHTML = (type==='success' ? '✅' : '❌') + ' ' + msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 4000);
+  }
 
-function getStudents() {
-    fetch("get.php")
-    .then(res => res.json())
-    .then(data => {
-        let output = "";
-        data.forEach(s => {
-            output += `Name: ${s.name}, Roll: ${s.roll}, Marks: ${s.marks}<br>`;
-        });
-        document.getElementById("output").innerHTML = output;
+  // Form submission via fetch (AJAX)
+  document.getElementById('registrationForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    // Basic client-side validation
+    const required = this.querySelectorAll('[required]');
+    let valid = true;
+    required.forEach(el=>{
+      if(el.type==='checkbox' ? !el.checked : !el.value.trim()){
+        el.style.borderColor = 'var(--error)';
+        el.style.boxShadow = '0 0 0 3px rgba(247,106,106,.18)';
+        valid = false;
+      } else {
+        el.style.borderColor = '';
+        el.style.boxShadow = '';
+      }
     });
-}
+
+    if(!valid){ showToast('Please fill all required fields.', 'error'); return; }
+
+    // Submit to PHP
+    const formData = new FormData(this);
+    // Convert checkboxes array to comma string for MySQL
+    const interests = [...this.querySelectorAll('input[name="interests[]"]:checked')].map(c=>c.value);
+    formData.set('interests', interests.join(', '));
+
+    try {
+      const res = await fetch('register.php', { method:'POST', body: formData });
+      const text = await res.text();
+      if(res.ok && text.includes('SUCCESS')){
+        showToast('Registration successful! Check your email.', 'success');
+        this.reset();
+        document.getElementById('fileLabel').innerHTML = '<strong>Click to upload</strong> or drag & drop<br/>JPG, PNG or PDF — max 2 MB';
+      } else {
+        // showToast('Server error: ' + (text||'Unknown'), 'error');
+        alert('Server error: ' + (text||'Unknown'), 'error')
+      }
+    } catch(err){
+      // For demo (no server), show success
+      showToast('Form ready! Connect to PHP/MySQL to save data.', 'success');
+    }
+  });
 </script>
 
 </body>
