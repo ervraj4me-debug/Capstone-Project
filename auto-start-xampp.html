@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <!-- Always force latest IE rendering engine or request Chrome Frame -->
@@ -7,10 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Use title if it's in the page YAML frontmatter -->
-    <title>Welcome to XAMPP</title>
+    <title>Auto-Start XAMPP</title>
 
-    <meta name="description" content="XAMPP is an easy to install Apache distribution containing MariaDB, PHP and Perl." />
-    <meta name="keywords" content="xampp, apache, php, perl, mariadb, open source distribution" />
+    
+    
 
     <link href="/dashboard/stylesheets/normalize.css" rel="stylesheet" type="text/css" /><link href="/dashboard/stylesheets/all.css" rel="stylesheet" type="text/css" />
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
@@ -23,7 +23,7 @@
 
   </head>
 
-  <body class="de de_index index">
+  <body class="docs docs_auto-start-xampp">
     <div id="fb-root"></div>
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
@@ -36,7 +36,7 @@
       <nav class="top-bar" data-topbar>
         <ul class="title-area">
           <li class="name">
-            <h1><a href="/dashboard/de/index.html">Apache Friends</a></h1>
+            <h1><a href="/dashboard/index.html">Apache Friends</a></h1>
           </li>
           <li class="toggle-topbar menu-icon">
             <a href="#">
@@ -48,8 +48,8 @@
         <section class="top-bar-section">
           <!-- Left Nav Section -->
           <ul class="left">
-              <li class="item "><a href="/dashboard/de/faq.html">Häufig gestellte Fragen</a></li>
-              <li class="item "><a href="/dashboard/de/howto.html">HOW-TO Guides</a></li>
+              <li class="item "><a href="/dashboard/faq.html">FAQs</a></li>
+              <li class="item active"><a href="/dashboard/howto.html">HOW-TO Guides</a></li>
               <li class="item "><a target="_blank" href="/dashboard/phpinfo.php">PHPInfo</a></li>
               <li class="item "><a href="/phpmyadmin/">phpMyAdmin</a></li>
           </ul>
@@ -61,42 +61,76 @@
       <div class="hero">
   <div class="row">
     <div class="large-12 columns">
-      <h1><img src="/dashboard/images/xampp-logo.svg" />XAMPP <span>Apache + MariaDB + PHP + Perl</span></h1>
+      <h1>Documentation</h1>
     </div>
   </div>
 </div>
 <div class="row">
   <div class="large-12 columns">
-    <h2>Welcome to XAMPP for OS X 8.2.4</h2>
+    <ul class="sub-nav">
+      <li>
+<a class="pdf" target="_blank" href="/dashboard/docs/auto-start-xampp.pdf">          Download PDF
+          <span>auto-start-xampp.pdf</span>
+</a>      </li>
+    </ul>
+    <article class="asciidoctor">
+      <h1>Auto-Start XAMPP</h1>
+<div class="paragraph">
+<p>By default, you have to start XAMPP or its components manually every time you reboot your system. However, you can also configure XAMPP components to start automatically on system boot. Follow the steps below.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Log in to the system as an administrator.</p>
+</li>
+<li>
+<p>Create a file named <em>org.apachefriends.xampp.plist</em> in the <em>/Library/LaunchDaemons</em> directory. Fill this file with the following content:</p>
+<div class="literalblock">
+<div class="content">
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+  &lt;dict&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;org.apachefriends.xampp&lt;/string&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+      &lt;string&gt;/Applications/XAMPP/xamppfiles/xampp&lt;/string&gt;
+      &lt;string&gt;start&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;UserName&lt;/key&gt;
+    &lt;string&gt;root&lt;/string&gt;
+    &lt;key&gt;RunAtLoad&lt;/key&gt;
+    &lt;true/&gt;
+    &lt;key&gt;OnDemand&lt;/key&gt;
+    &lt;false/&gt;
+  &lt;/dict&gt;
+&lt;/plist&gt;</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Save your changes to the file.</p>
+</li>
+<li>
+<p>Reboot your system and XAMPP should start automatically.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>To start XAMPP immediately without rebooting, use the command below:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>sudo launchctl load -w /Library/LaunchDaemons/org.apachefriends.xampp.plist</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To revert the changes, delete the <em>org.apachefriends.xampp.plist</em> file.</p>
+</div>
+    </article>
   </div>
 </div>
-<div class="row">
-  <div class="large-12 columns">
-    <p>
-      You have successfully installed XAMPP on this system! Now you can start using Apache, MariaDB, PHP and other components.
-      You can find more info in the <a href="/dashboard/de/faq.html">Häufig gestellte Fragen</a> section or check the <a href="/dashboard/de/howto.html">HOW-TO Guides</a> for getting started with PHP applications.
-    </p>
-    <p>
-      XAMPP is meant only for development purposes. It has certain configuration settings that make it easy to develop locally but that are insecure if you want to have your installation accessible to others.
-    </p>
-    <p>
-      Start the XAMPP Control Panel to check the server status.
-    </p>
-  </div>
-</div>
-<div class="row">
-  <div class="large-12 columns">
-    <h3>Gemeinschaft</h3>
-  </div>
-</div>
-<div class="row">
-  <div class="large-12 columns">
-    <p>
-      XAMPP gibt es seit mehr als 10 Jahren &ndash; eine riesige Gemeinschaft steht dahinter. Auch du kannst ein Teil davon werden, durch Teilnahme an unseren <a href="https://community.apachefriends.org">Foren</a>, uns auf <a href="https://www.facebook.com/we.are.xampp">Facebook</a> likest, oder unseren Tätigkeiten auf <a href="https://twitter.com/apachefriends">Twitter</a> folgst.
-    </p>
-  </div>
-</div>
-
 
     </div>
 
@@ -113,9 +147,9 @@
           </div>
           <ul class="footer_links columns large-9">
             <li><a href="https://www.apachefriends.org/blog.html">Blog</a></li>
-            <li><a href="/privacy_policy.html">Datenschutzbestimmungen</a></li>
+            <li><a href="/privacy_policy.html">Privacy Policy</a></li>
             <li>
-<a target="_blank" href="http://www.fastly.com/">                CDN bereitgestellt durch
+<a target="_blank" href="http://www.fastly.com/">                CDN provided by
                 <img width="48" data-2x="/dashboard/images/fastly-logo@2x.png" src="/dashboard/images/fastly-logo.png" />
 </a>            </li>
           </ul>
