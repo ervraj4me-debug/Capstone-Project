@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Data</title>
+</head>
+<body>
+
+<h2>Student Form</h2>
+
+Name: <input type="text" id="name"><br><br>
+Roll: <input type="text" id="roll"><br><br>
+Marks: <input type="number" id="marks"><br><br>
+
+<button onclick="addStudent()">Save</button>
+<button onclick="getStudents()">Show Data</button>
+
+<h3>Student List:</h3>
+<div id="output"></div>
+
+<script>
+function addStudent() {
+    let name = document.getElementById("name").value;
+    let roll = document.getElementById("roll").value;
+    let marks = document.getElementById("marks").value;
+
+    fetch("add.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `name=${name}&roll=${roll}&marks=${marks}`
+    })
+    .then(res => res.text())
+    .then(data => alert(data));
+}
+
+function getStudents() {
+    fetch("get.php")
+    .then(res => res.json())
+    .then(data => {
+        let output = "";
+        data.forEach(s => {
+            output += `Name: ${s.name}, Roll: ${s.roll}, Marks: ${s.marks}<br>`;
+        });
+        document.getElementById("output").innerHTML = output;
+    });
+}
+</script>
+
+</body>
+</html>
